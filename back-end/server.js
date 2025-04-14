@@ -1,25 +1,34 @@
 const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
-
-const authRoutes = require('./routes/auth');
-
 const app = express();
+const cors = require('cors');
+const connectDB = require('./dbConnection');
 
-// Middleware
-app.use(cors());
+// Configure CORS to accept requests from your frontend
+app.use(cors({
+    origin: 'http://localhost:5173', // Your Vite dev server URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
+
 app.use(express.json());
 
-// Routes
-app.use('/api/auth', authRoutes);
-
-// Protected route example
-app.get('/api/protected', (req, res) => {
-  res.json({ message: 'This is a protected route' });
+// Connect to database
+connectDB().catch(err => {
+    console.error('Failed to connect to database:', err);
+    process.exit(1);
 });
 
-const PORT = process.env.PORT || 5000;
+// API routes
+app.use("/api", require("./route"));
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Something went wrong!' });
+});
+
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-}); 
+    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`CORS enabled for: http://localhost:5173`);
+});
