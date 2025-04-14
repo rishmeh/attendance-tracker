@@ -2,11 +2,37 @@
     height: 100vh;
     font-family: monospace;
     padding: 20px;
-
 }
 
 *{
     font-family: monospace;
+}
+
+.nav {
+    display: flex;
+    gap: 20px;
+    padding: 10px;
+    background-color: #f2f2f2;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.nav a:hover {
+    background-color: #ddd;
+}
+
+.nav a.active {
+    background-color: #4CAF50;
+    color: white;
 }
 
 .AppContainer > input{
@@ -38,6 +64,20 @@
     width: fit-content;
     padding: 10px;
     gap: 15px;
+}
+
+.ontopages a {
+    text-decoration: none;
+    color: #333;
+    transition: color 0.3s;
+}
+
+.ontopages a:hover {
+    color: #4CAF50;
+}
+
+.ontopages a.active {
+    color: #4CAF50;
 }
 
 .nav{
