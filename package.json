@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "fontawesome": "^5.6.3",
+    "react-router-dom": "^7.5.0"
+  }
+}

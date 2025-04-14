@@ -1,0 +1,46 @@
+.AppContainer{
+    height: 100vh;
+    font-family: monospace;
+    padding: 20px;
+
+}
+
+*{
+    font-family: monospace;
+}
+
+.AppContainer > input{
+    margin-bottom: 20px;
+    display: block;
+}
+
+.TodaysClassesContainer{
+    background-color: bisque;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 5px;
+}
+
+.classRow{
+    margin-top: 10px;
+}
+
+.AppContainer > h4{
+    display: block;
+    font-size: 1rem;
+}
+
+.ontopages{
+    position: fixed;
+    right: 10%;
+    top: 5%;
+    display: flex;
+    width: fit-content;
+    padding: 10px;
+    gap: 15px;
+}
+
+.nav{
+    cursor: pointer;
+    font-size: 2rem;
+}
