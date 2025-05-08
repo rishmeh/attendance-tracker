@@ -10,7 +10,7 @@ import { faChartSimple } from '@fortawesome/free-solid-svg-icons';
 
 function App() {
   const context = useContext(AppContext);
-  const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, attendance, setAttendance } = context;
+  const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, attendance, setAttendance , user} = context;
   const location = useLocation();
 
   const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -21,8 +21,7 @@ function App() {
   };
 
   const [selectedDate, setSelectedDate] = useState(() => {
-    const savedDate = localStorage.getItem('selectedDate');
-    return savedDate || getTodayDate();
+    return getTodayDate();
   });
 
   useEffect(() => {
@@ -39,11 +38,63 @@ function App() {
   };
   const todayData = dayData[day] || [];
 
-  const toggleCheckbox = (type, uniqueKey) => {
+  useEffect(() => {
+    const fetchAttendanceData = async () => {
+      if (!user) return;
+      
+      
+      try {
+        const response = await fetch(`http://localhost:8080/api/attendance-by-date?id=${user}&date=${selectedDate}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Update the attendance state with fetched data
+          setAttendance(prev => {
+            return {
+              ...prev,
+              [selectedDate]: {
+                ...prev[selectedDate],
+                [day]: data.attendanceData
+              }
+            };
+          });
+        } else {
+          console.error('Failed to fetch attendance data:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error fetching attendance data:', error);
+      } 
+    };
+
+    fetchAttendanceData();
+  }, [selectedDate, day, user, setAttendance]);
+
+  const toggleCheckbox = async (type, uniqueKey) => {
+
+    const currentStatus = getStatus(uniqueKey, type);
+    const status = currentStatus ? "remove" : "add";
+    const classname = uniqueKey.split("-")[0];
+    try {
+      await fetch(`http://localhost:8080/api/${type}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: user,        
+          classname,
+          date: selectedDate,
+          status
+        })
+      });
+    } catch (err) {
+      console.error(`Error updating ${type}:`, err);
+    }
+
     setAttendance(prev => {
       const prevDayData = prev[selectedDate]?.[day] || {};
       const prevClassData = prevDayData[uniqueKey] || { held: false, attended: false };
-
       return {
         ...prev,
         [selectedDate]: {
@@ -92,6 +143,7 @@ function App() {
               min="2025-01-01"
               max={getTodayDate()}
               value={selectedDate}
+              defaultValue={getTodayDate()}
               onChange={handleDateChange}
             /></h4>
            
@@ -126,7 +178,7 @@ function App() {
                   <div>Attended: {count('attended')} / {todayData.length}</div>
                 </>
               ) : (
-                <>No classes scheduled. Only thing in schedule is rest.</>
+                <>No classes scheduled.</>
               )}
             </div>
           </>

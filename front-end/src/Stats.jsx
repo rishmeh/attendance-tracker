@@ -1,11 +1,15 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import AppContext from '../context/AppContext'
 import "../css/Stats.css"
 import { Link } from 'react-router-dom';
 
 const Stats = () => {
   const context = useContext(AppContext);
-  const { stats } = context;
+  const { stats, setStats } = context;
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  
 
   // Calculate total classes and attendance
   const totalClasses = Object.values(stats || {}).reduce((total, classStats) => {
@@ -19,6 +23,14 @@ const Stats = () => {
   const attendancePercentage = totalClasses > 0 
     ? ((totalAttended / totalClasses) * 100).toFixed(2) 
     : 0;
+
+  if (loading) {
+    return <div className='StatsContainer'>Loading statistics...</div>;
+  }
+
+  if (error) {
+    return <div className='StatsContainer'>{error}</div>;
+  }
 
   return (
     <div className='StatsContainer'>

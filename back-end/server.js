@@ -6,8 +6,7 @@ const connectDB = require('./dbConnection');
 // Configure CORS to accept requests from your frontend
 app.use(cors({
     origin: 'http://localhost:5173', // Your Vite dev server URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 
 app.use(express.json());

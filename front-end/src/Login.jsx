@@ -9,12 +9,11 @@ const Login = () => {
   
   const [showLogin, setShowLogin] = useState(false);
   const [loginData, setLoginData] = useState({
-    email: '',
+    id: '',
     password: ''
   });
   const [registerData, setRegisterData] = useState({
     id: '',
-    email: '',
     password: ''
   });
   const [error, setError] = useState('');
@@ -50,13 +49,13 @@ const Login = () => {
     e.preventDefault();
     setError('');
     
-    if (!loginData.email || !loginData.password) {
-      setError('Please enter both email and password');
+    if (!loginData.id || !loginData.password) {
+      setError('Please enter both id and password');
       return;
     }
     
     try {
-      const result = await login(loginData.email, loginData.password);
+      const result = await login(loginData.id, loginData.password);
       
       if (result.success) {
         navigate('/');
@@ -69,31 +68,31 @@ const Login = () => {
     }
   };
   
-  const handleRegisterSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    
-    if (!registerData.id || !registerData.email || !registerData.password) {
-      setError('All fields are required for registration');
-      return;
-    }
-    
-    try {
-      const result = await register(registerData);
+    const handleRegisterSubmit = async (e) => {
+      e.preventDefault();
+      setError('');
       
-      if (result.success) {
-        setSuccessMessage('Registration successful! Redirecting to dashboard...');
-        setTimeout(() => {
-          navigate('/');
-        }, 1500);
-      } else {
-        setError(result.message || 'Registration failed. Please try again.');
+      if (!registerData.id || !registerData.password) {
+        setError('All fields are required for registration');
+        return;
       }
-    } catch (err) {
-      setError('An error occurred during registration. Please try again.');
-      console.error(err);
-    }
-  };
+      
+      try {
+        const result = await register(registerData);
+        
+        if (result.success) {
+          setSuccessMessage('Registration successful! Redirecting to dashboard...');
+          setTimeout(() => {
+            navigate('/');
+          }, 1000);
+        } else {
+          setError(result.message || 'Registration failed. Please try again.');
+        }
+      } catch (err) {
+        setError('An error occurred during registration. Please try again.');
+        console.error(err);
+      }
+    };
   
   return (
     <div className='LoginPage'>
@@ -104,24 +103,14 @@ const Login = () => {
           {error && !showLogin && <p className="error-message">{error}</p>}
           {successMessage && !showLogin && <p className="success-message">{successMessage}</p>}
           
-          <form onSubmit={handleRegisterSubmit}>
-            <p className='mailid'>Student ID:</p>
+          <form onSubmit={handleRegisterSubmit} className='loginform'>
+            <p className='username'>Username:</p>
             <input 
               type='text' 
               name="id"
-              placeholder='Please enter your student ID' 
-              className='logininput idinp'
+              placeholder='Please enter your username' 
+              className='reginput '
               value={registerData.id}
-              onChange={handleRegisterChange}
-            />
-            
-            <p className='mailid'>Mail Id:</p>
-            <input 
-              type='email' 
-              name="email"
-              placeholder='Please input your email id' 
-              className='logininput emailinp'
-              value={registerData.email}
               onChange={handleRegisterChange}
             />
             
@@ -130,7 +119,7 @@ const Login = () => {
               type='password' 
               name="password"
               placeholder='Please enter your password' 
-              className='logininput passwordinp'
+              className='reginput '
               value={registerData.password}
               onChange={handleRegisterChange}
             />
@@ -146,13 +135,13 @@ const Login = () => {
             {error && showLogin && <p className="error-message">{error}</p>}
             
             <form onSubmit={handleLoginSubmit}>
-              <p className='mailid logincontainertext'>Mail Id:</p>
+              <p className='username logincontainertext'>Username:</p>
               <input 
-                type='email' 
-                name="email"
-                placeholder='Please input your email id' 
-                className='logininput1 emailinp'
-                value={loginData.email}
+                type='text' 
+                name="id"
+                placeholder='Please enter your username' 
+                className='logininput1 idinp'
+                value={loginData.id}
                 onChange={handleLoginChange}
               />
               

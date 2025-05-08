@@ -20,23 +20,28 @@
     border-radius: 5px;
 }
 
-.logininput{
-    width: 85%;
-    height: 20%;
+.reginput{
+    width: 300px;
+    height: 40px;
     margin-bottom: 12px;
     font-size: 1rem;
 }
 
-.mailid{
+.username{
     padding-bottom: 0;
     margin-bottom: 0;
     color: azure;
+    font-size: large;
+    text-align: left;
+    font-size: 1.5rem;
 }
 
 .password{
     padding-bottom: 0%;
     margin-bottom: 0;
     color: azure;
+    font-size: large;
+    font-size: 1.5rem;
 }
 
 .LoginContainer{
@@ -55,17 +60,17 @@
 }
 
 .LoginContainer.showLogin {
-    top: 26%;
+    top: calc(12% + 80px);
+    
 }
 
 .RegisterHeading{
-    font-size: 5rem;
+    font-size: 80px;
     color: azure;
     padding: 0;
     margin: 0;
     cursor: pointer;
-    margin-left: 10%;
-   margin-left: 10%;
+    text-align: center;
 }
 
 .LoginHeading{
@@ -77,21 +82,34 @@
 }
 
 .RegisterContainer{
-    margin-top: 10%;
-    padding-left: 10%;
+    margin-top: 7%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    align-items: center;
+}
+
+.loginform{
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;   
+    
 }
 
 .RegisterButton{
-    width: 250px;
+    width: 308px;
     height: 50px;
-    margin-left: 12%;
+    margin-top: 30px;
     cursor: pointer;
+    font-size: 2rem;
 }
 
 .logininput1{
-    width: 100%;
-    height: 10%;
+    width: 300px;
+    height: 40px;
     margin-bottom: 10px;
+    font-size: 1rem;
 }
 
 .LoginMainContainer{
@@ -104,8 +122,9 @@
 }
 
 .LoginButton{
-    width: 103%;
+    width: 308px;
     height: 50px;
     margin-top: 30px;
     cursor: pointer;
+    font-size: 2rem;
 }

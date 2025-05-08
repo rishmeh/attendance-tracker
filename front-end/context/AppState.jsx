@@ -2,63 +2,60 @@ import React, { useState, useEffect } from 'react';
 import AppContext from './AppContext';
 
 const AppState = ({ children }) => {
-  // Load initial state from localStorage or use defaults
-  const loadState = (key, defaultValue) => {
-    const saved = localStorage.getItem(key);
-    return saved ? JSON.parse(saved) : defaultValue;
-  };
-
-  const [monday, setMonday] = useState(() => loadState('monday', []));
-  const [tuesday, setTuesday] = useState(() => loadState('tuesday', []));
-  const [wednesday, setWednesday] = useState(() => loadState('wednesday', []));
-  const [thursday, setThursday] = useState(() => loadState('thursday', []));
-  const [friday, setFriday] = useState(() => loadState('friday', []));
-  const [saturday, setSaturday] = useState(() => loadState('saturday', []));
-  const [sunday, setSunday] = useState(() => loadState('sunday', []));
+  
+  const [monday, setMonday] = useState([]);
+  const [tuesday, setTuesday] = useState([]);
+  const [wednesday, setWednesday] = useState([]);
+  const [thursday, setThursday] = useState([]);
+  const [friday, setFriday] = useState([]);
+  const [saturday, setSaturday] = useState([]);
+  const [sunday, setSunday] = useState([]);
   const [newClass, setNewClass] = useState('');
-  const [classes, setClasses] = useState(() => loadState('classes', []));
-  const [attendance, setAttendance] = useState(() => loadState('attendance', {}));
-  const [stats, setStats] = useState(() => loadState('stats', {}));
+  const [classes, setClasses] = useState([]);
+  const [attendance, setAttendance] = useState({});
+  const [stats, setStats] = useState({});
+  const [user, setUser] = useState('');
+
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('monday', JSON.stringify(monday));
-  }, [monday]);
-
-  useEffect(() => {
-    localStorage.setItem('tuesday', JSON.stringify(tuesday));
-  }, [tuesday]);
-
-  useEffect(() => {
-    localStorage.setItem('wednesday', JSON.stringify(wednesday));
-  }, [wednesday]);
-
-  useEffect(() => {
-    localStorage.setItem('thursday', JSON.stringify(thursday));
-  }, [thursday]);
-
-  useEffect(() => {
-    localStorage.setItem('friday', JSON.stringify(friday));
-  }, [friday]);
-
-  useEffect(() => {
-    localStorage.setItem('saturday', JSON.stringify(saturday));
-  }, [saturday]);
-
-  useEffect(() => {
-    localStorage.setItem('sunday', JSON.stringify(sunday));
-  }, [sunday]);
-
-  useEffect(() => {
-    localStorage.setItem('classes', JSON.stringify(classes));
-  }, [classes]);
-
-  useEffect(() => {
-    localStorage.setItem('attendance', JSON.stringify(attendance));
-  }, [attendance]);
+    const fetchData = async () => {
+      try {
+        console.log("user id:",user)
+        const res = await fetch("http://localhost:8080/api/user-class-data", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ id: user })
+        });
+  
+        if (!res.ok) {
+          console.error("error:", res.message);
+          return;
+        }
+  
+        const data = await res.json();
+  
+        setMonday(data.monday || []);
+        setTuesday(data.tuesday || []);
+        setWednesday(data.wednesday || []);
+        setThursday(data.thursday || []);
+        setFriday(data.friday || []);
+        setSaturday(data.saturday || []);
+        setSunday(data.sunday || []);
+        setClasses(data.classes || []);
+        setAttendance(data.attendance || {});
+        setStats(data.stats || {});
+      } catch (err) {
+        console.error("Error fetching class data:", err);
+      }
+    };
+  
+    fetchData();
+  }, [user]);
 
   // Authentication state
-  const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
 
@@ -98,80 +95,23 @@ const AppState = ({ children }) => {
   }, [attendance, classes]);
 
   // Fetch user data from the API
-  const fetchUserData = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/api/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        setIsAuthenticated(true);
-        
-        // Process the user's classes and populate the schedule
-        if (data.user.classes) {
-          // Create class list
-          const classList = data.user.classes.map(cls => cls.name);
-          setClasses(classList);
-          
-          // Populate the schedule based on class day
-          const scheduleByDay = {
-            Monday: [], Tuesday: [], Wednesday: [], 
-            Thursday: [], Friday: [], Saturday: [], Sunday: []
-          };
-          
-          data.user.classes.forEach(cls => {
-            if (cls.schedule && cls.schedule.day) {
-              scheduleByDay[cls.schedule.day].push(`${cls.name} (${cls.schedule.time})`);
-            }
-          });
-          
-          setMonday(scheduleByDay.Monday);
-          setTuesday(scheduleByDay.Tuesday);
-          setWednesday(scheduleByDay.Wednesday);
-          setThursday(scheduleByDay.Thursday);
-          setFriday(scheduleByDay.Friday);
-          setSaturday(scheduleByDay.Saturday);
-          setSunday(scheduleByDay.Sunday);
-          
-          // Build stats object
-          const statsObj = {};
-          data.user.classes.forEach(cls => {
-            statsObj[cls.name] = {
-              held: cls.held || 0,
-              attended: cls.attended || 0
-            };
-          });
-          setAttendance(statsObj);
-        }
-      } else {
-        // Token invalid
-        logout();
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      logout();
-    }
-  };
+  
 
   // Login function
-  const login = async (email, password) => {
+  async function login (id, password) {
     try {
       const response = await fetch('http://localhost:8080/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
+        },  
+        body: JSON.stringify({ id, password })
       });
       
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('token', data.token);
-        setToken(data.token);
+        setUser(id);
         return { success: true };
       } else {
         const error = await response.json();
@@ -184,7 +124,7 @@ const AppState = ({ children }) => {
   };
 
   // Register function
-  const register = async (userData) => {
+  async function register (userData) {
     try {
       const response = await fetch('http://localhost:8080/api/register', {
         method: 'POST',
@@ -197,8 +137,8 @@ const AppState = ({ children }) => {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('token', data.token);
-        setToken(data.token);
-        return { success: true };
+        setUser(userData.id);
+        return { success: true, userId: data.userId };
       } else {
         const error = await response.json();
         return { success: false, message: error.message || "Registration failed" };
@@ -209,13 +149,7 @@ const AppState = ({ children }) => {
     }
   };
 
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setIsAuthenticated(false);
-    setUser(null);
-  };
+  
 
   // Add a class
   const addClass = async (className, day, time) => {
@@ -230,41 +164,35 @@ const AppState = ({ children }) => {
       });
       
       if (response.ok) {
-        // Refresh user data to get updated classes
-        fetchUserData();
-        return { success: true };
+        const data = await response.json();
+        // Immediately update local state with the new class
+        setClasses(prev => [...prev, className]);
+        
+        // Update the appropriate day's schedule
+        const daySetter = {
+          'Monday': setMonday,
+          'Tuesday': setTuesday,
+          'Wednesday': setWednesday,
+          'Thursday': setThursday,
+          'Friday': setFriday,
+          'Saturday': setSaturday,
+          'Sunday': setSunday
+        };
+        
+        if (daySetter[day]) {
+          daySetter[day](prev => [...prev, `${className} (${time})`]);
+        }
+        
+        // Also fetch updated user data from backend
+        await fetchUserData();
+        
+        return { success: true, class: data.class };
       } else {
         const error = await response.json();
         return { success: false, message: error.message || "Failed to add class" };
       }
     } catch (error) {
       console.error("Error adding class:", error);
-      return { success: false, message: "Network error" };
-    }
-  };
-
-  // Update attendance stats
-  const updateAttendance = async (classId, attendanceData) => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/attendance/${classId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(attendanceData)
-      });
-      
-      if (response.ok) {
-        // Refresh user data after update
-        fetchUserData();
-        return { success: true };
-      } else {
-        const error = await response.json();
-        return { success: false, message: error.message || "Failed to update attendance" };
-      }
-    } catch (error) {
-      console.error("Error updating attendance:", error);
       return { success: false, message: "Network error" };
     }
   };
@@ -279,8 +207,8 @@ const AppState = ({ children }) => {
         stats, setStats,
         setMonday, setTuesday, setWednesday, setThursday, setFriday, setSaturday, setSunday,
         user, isAuthenticated, 
-        login, register, logout,
-        addClass, updateAttendance
+        login, register,
+        addClass  
       }}
     >
       {children}

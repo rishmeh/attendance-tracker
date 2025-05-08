@@ -1,46 +1,92 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+
 
 // Schema for classes
 const ClassSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  schedule: {
-    day: { type: String, enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] },
-    time: { type: String, required: true }
+  monday: {
+    type:Array,default:[]
   },
-  held: { type: Number, default: 0 },
-  attended: { type: Number, default: 0 }
+  tuesday:{
+    type:Array,default:[]
+  },
+  wednesday:{
+    type:Array,default:[]
+  },
+  thursday:{
+    type:Array,default:[]
+  },
+  friday:{
+    type:Array,default:[]
+  },
+  saturday:{
+    type:Array,default:[]
+  },
+  sunday:{
+    type:Array,default:[]
+  },
+  classes:{
+    type:Array,default:[]
+  },
+  attendance:{
+    type:Array,default:[]
+  },stats:{
+    type:Array,default:[]
+  }
+})
+
+const dayEntrySchema = new mongoose.Schema({
+  date: { type: String, required: true },
+  classes: { type: [String], default: [] },
+  classes_held: { type: [String], default: [] },
+  classes_attended: { type: [String], default: [] }
 });
+
+const daysDataSchema = new mongoose.Schema({
+  id: { type: String, required: true },
+  entries: { type: [dayEntrySchema], default: [] }
+});
+
+const DayData = mongoose.model('DayData', daysDataSchema);
+
+const attendanceSchema = new mongoose.Schema({
+  id:{type:String, required:true},
+  entries:[{
+    classname:{type:String, required:true},
+    held:{type: Number,default:0},
+    attended:{type: Number,default:0}
+  }]
+})
+const Attendance = mongoose.model("Attendance", attendanceSchema)
 
 // User Schema with authentication fields
 const UserSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }, // Will be hashed
-  classes: [ClassSchema],
-  createdAt: { type: Date, default: Date.now }
+  password: { type: String, required: true }, 
+  classSchema: {type:ClassSchema,default: () => ({}), required: false},
 });
 
-// Pre-save hook to hash password before saving
-UserSchema.pre('save', async function(next) {
-  // Only hash the password if it's modified or new
-  if (!this.isModified('password')) return next();
-  
+UserSchema.post('save', async function (doc, next) {
   try {
-    // Generate salt
-    const salt = await bcrypt.genSalt(10);
-    // Hash password
-    this.password = await bcrypt.hash(this.password, salt);
+    // Check if DayData already exists
+    const dayDataExists = await DayData.findOne({ id: doc.id });
+    if (!dayDataExists) {
+      await DayData.create({ id: doc.id });
+    }
+
+    // Check if Attendance already exists
+    const attendanceExists = await Attendance.findOne({ id: doc.id });
+    if (!attendanceExists) {
+      await Attendance.create({ id: doc.id });
+    }
+
     next();
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    console.error("Error creating related documents:", err);
+    next(err); // Pass error to Mongoose
   }
 });
 
-// Method to compare password for authentication
-UserSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
-};
+
 
 const User = mongoose.model('User', UserSchema);
-module.exports = User;
+module.exports = {User, DayData, Attendance};
